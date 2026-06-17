@@ -494,12 +494,10 @@ export interface ExtensionsPgStatStatementsInfo {
 }
 
 export interface Files {
-  content_type: Generated<string>;
   created_at: Generated<Timestamp>;
   id: Generated<string>;
   name: string;
-  object_key: string;
-  size: Generated<Int8>;
+  path: Generated<string>;
   space_id: string;
   uploaded_by: string;
 }
