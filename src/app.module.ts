@@ -7,9 +7,19 @@ import { DatabaseModule } from './db/database.module';
 import { AuthModule } from './auth/auth.module';
 import { MembersModule } from './members/members.module';
 import { SpacesModule } from './spaces/spaces.module';
+import { AnnouncementsModule } from './announcements/announcements.module';
+import { BoardModule } from './board/board.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), DatabaseModule, AuthModule, MembersModule, SpacesModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    DatabaseModule,
+    AuthModule,
+    MembersModule,
+    SpacesModule,
+    AnnouncementsModule,
+    BoardModule,
+  ],
   controllers: [AppController, HealthController],
   providers: [AppService],
 })
