@@ -5,6 +5,8 @@
 
 import type { ColumnType } from "kysely";
 
+export type AttendanceStatus = "결석" | "지각" | "출석";
+
 export type AuthAalLevel = "aal1" | "aal2" | "aal3";
 
 export type AuthCodeChallengeMethod = "plain" | "s256";
@@ -24,6 +26,8 @@ export type AuthOauthResponseType = "code";
 export type AuthOneTimeTokenType = "confirmation_token" | "email_change_token_current" | "email_change_token_new" | "phone_change_token" | "reauthentication_token" | "recovery_token";
 
 export type ContentScope = "전체" | "space";
+
+export type EventKind = "기타" | "마감" | "발표" | "세미나" | "정기모임" | "행사";
 
 export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
   ? ColumnType<S, I | undefined, U>
@@ -65,6 +69,13 @@ export interface Announcements {
   scope: ContentScope;
   space_id: string | null;
   title: string;
+}
+
+export interface Attendance {
+  checked_at: Generated<Timestamp>;
+  event_id: string;
+  status: AttendanceStatus;
+  user_id: string;
 }
 
 export interface AuthAuditLogEntries {
@@ -404,6 +415,19 @@ export interface Comments {
   post_id: string;
 }
 
+export interface Events {
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  ends_at: Timestamp | null;
+  id: Generated<string>;
+  kind: Generated<EventKind>;
+  location: Generated<string>;
+  scope: ContentScope;
+  space_id: string | null;
+  starts_at: Timestamp;
+  title: string;
+}
+
 export interface ExtensionsPgStatStatements {
   calls: Int8 | null;
   dbid: number | null;
@@ -654,6 +678,7 @@ export interface VaultSecrets {
 
 export interface DB {
   announcements: Announcements;
+  attendance: Attendance;
   "auth.audit_log_entries": AuthAuditLogEntries;
   "auth.custom_oauth_providers": AuthCustomOauthProviders;
   "auth.flow_state": AuthFlowState;
@@ -678,6 +703,7 @@ export interface DB {
   "auth.webauthn_challenges": AuthWebauthnChallenges;
   "auth.webauthn_credentials": AuthWebauthnCredentials;
   comments: Comments;
+  events: Events;
   "extensions.pg_stat_statements": ExtensionsPgStatStatements;
   "extensions.pg_stat_statements_info": ExtensionsPgStatStatementsInfo;
   memberships: Memberships;
