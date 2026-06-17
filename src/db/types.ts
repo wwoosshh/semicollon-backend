@@ -409,6 +409,7 @@ export interface AuthWebauthnCredentials {
 
 export interface ChatChannels {
   created_at: Generated<Timestamp>;
+  file_id: string | null;
   id: Generated<string>;
   name: Generated<string>;
   space_id: string;
@@ -490,6 +491,17 @@ export interface ExtensionsPgStatStatements {
 export interface ExtensionsPgStatStatementsInfo {
   dealloc: Int8 | null;
   stats_reset: Timestamp | null;
+}
+
+export interface Files {
+  content_type: Generated<string>;
+  created_at: Generated<Timestamp>;
+  id: Generated<string>;
+  name: string;
+  object_key: string;
+  size: Generated<Int8>;
+  space_id: string;
+  uploaded_by: string;
 }
 
 export interface Memberships {
@@ -722,6 +734,7 @@ export interface DB {
   events: Events;
   "extensions.pg_stat_statements": ExtensionsPgStatStatements;
   "extensions.pg_stat_statements_info": ExtensionsPgStatStatementsInfo;
+  files: Files;
   memberships: Memberships;
   messages: Messages;
   posts: Posts;
