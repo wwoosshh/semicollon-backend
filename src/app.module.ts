@@ -11,7 +11,6 @@ import { AnnouncementsModule } from './announcements/announcements.module';
 import { BoardModule } from './board/board.module';
 import { EventsModule } from './events/events.module';
 import { ChatModule } from './chat/chat.module';
-import { FilesModule } from './files/files.module';
 
 @Module({
   imports: [
@@ -24,7 +23,6 @@ import { FilesModule } from './files/files.module';
     BoardModule,
     EventsModule,
     ChatModule,
-    FilesModule,
   ],
   controllers: [AppController, HealthController],
   providers: [AppService],

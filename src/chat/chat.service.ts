@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { ForbiddenException, Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { DB_TOKEN, type Database } from "../db/database";
 import type { JwtPayload } from "../auth/token.service";
 
@@ -7,20 +7,63 @@ export class ChatService {
   constructor(@Inject(DB_TOKEN) private readonly db: Database) {}
 
   async ensureDefaultChannel(spaceId: string) {
-    const existing = await this.db
-      .selectFrom("chat_channels").select(["id", "name", "space_id", "created_at"])
-      .where("space_id", "=", spaceId).orderBy("created_at", "asc").execute();
-    if (existing.length) return existing;
-    const created = await this.db
-      .insertInto("chat_channels").values({ space_id: spaceId, name: "메인" })
-      .returning(["id", "name", "space_id", "created_at"]).executeTakeFirstOrThrow();
-    return [created];
+    const any = await this.db.selectFrom("chat_channels").select("id").where("space_id", "=", spaceId).executeTakeFirst();
+    if (!any) {
+      await this.db.insertInto("chat_channels")
+        .values({ space_id: spaceId, name: "메인", category: "일반", type: "text", position: 0 })
+        .execute();
+    }
   }
 
   listChannels(spaceId: string) {
     return this.db
-      .selectFrom("chat_channels").select(["id", "name", "space_id", "created_at"])
-      .where("space_id", "=", spaceId).orderBy("created_at", "asc").execute();
+      .selectFrom("chat_channels")
+      .select(["id", "name", "category", "type", "position", "space_id", "created_at"])
+      .where("space_id", "=", spaceId)
+      .orderBy("position", "asc")
+      .orderBy("created_at", "asc")
+      .execute();
+  }
+
+  private async assertCanManage(user: JwtPayload, spaceId: string) {
+    if (user.role === "운영진") return;
+    const m = await this.db.selectFrom("memberships").select("role")
+      .where("space_id", "=", spaceId).where("user_id", "=", user.sub).executeTakeFirst();
+    if (m?.role !== "리더") throw new ForbiddenException("채널 관리는 리더 또는 운영진만 가능합니다.");
+  }
+
+  async createChannel(user: JwtPayload, spaceId: string, dto: { name: string; category?: string; type?: string }) {
+    await this.assertCanManage(user, spaceId);
+    const max = await this.db.selectFrom("chat_channels")
+      .select((eb) => eb.fn.max("position").as("m"))
+      .where("space_id", "=", spaceId).executeTakeFirst();
+    const position = Number(max?.m ?? 0) + 1;
+    return this.db.insertInto("chat_channels")
+      .values({ space_id: spaceId, name: dto.name, category: dto.category ?? "일반", type: dto.type ?? "text", position })
+      .returning(["id", "name", "category", "type", "position", "space_id", "created_at"])
+      .executeTakeFirstOrThrow();
+  }
+
+  async updateChannel(user: JwtPayload, channelId: string, dto: { name?: string; category?: string; position?: number }) {
+    const ch = await this.db.selectFrom("chat_channels").select(["space_id"]).where("id", "=", channelId).executeTakeFirst();
+    if (!ch) throw new NotFoundException("채널을 찾을 수 없습니다.");
+    await this.assertCanManage(user, ch.space_id);
+    const patch: Record<string, unknown> = {};
+    if (dto.name !== undefined) patch.name = dto.name;
+    if (dto.category !== undefined) patch.category = dto.category;
+    if (dto.position !== undefined) patch.position = dto.position;
+    if (Object.keys(patch).length) await this.db.updateTable("chat_channels").set(patch).where("id", "=", channelId).execute();
+    return this.db.selectFrom("chat_channels")
+      .select(["id", "name", "category", "type", "position", "space_id", "created_at"])
+      .where("id", "=", channelId).executeTakeFirstOrThrow();
+  }
+
+  async deleteChannel(user: JwtPayload, channelId: string) {
+    const ch = await this.db.selectFrom("chat_channels").select(["space_id"]).where("id", "=", channelId).executeTakeFirst();
+    if (!ch) return { deleted: false };
+    await this.assertCanManage(user, ch.space_id);
+    await this.db.deleteFrom("chat_channels").where("id", "=", channelId).execute();
+    return { deleted: true };
   }
 
   async canSend(user: JwtPayload, channelId: string): Promise<boolean> {
