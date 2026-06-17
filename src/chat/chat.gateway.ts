@@ -7,7 +7,13 @@ import { TokenService } from "../auth/token.service";
 import { ChatService } from "./chat.service";
 
 @WebSocketGateway({
-  cors: { origin: process.env.CORS_ORIGIN?.split(",") ?? true, credentials: true },
+  cors: {
+    origin:
+      process.env.CORS_ORIGIN?.split(",")
+        .map((o) => o.trim())
+        .filter(Boolean) ?? true,
+    credentials: true,
+  },
 })
 export class ChatGateway implements OnGatewayConnection {
   @WebSocketServer() server!: Server;
