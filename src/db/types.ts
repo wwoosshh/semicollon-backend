@@ -23,6 +23,8 @@ export type AuthOauthResponseType = "code";
 
 export type AuthOneTimeTokenType = "confirmation_token" | "email_change_token_current" | "email_change_token_new" | "phone_change_token" | "reauthentication_token" | "recovery_token";
 
+export type ContentScope = "전체" | "space";
+
 export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
   ? ColumnType<S, I | undefined, U>
   : ColumnType<T, T | undefined, T>;
@@ -43,11 +45,27 @@ export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
 export type Numeric = ColumnType<string, number | string, number | string>;
 
+export type SpaceRole = "리더" | "멤버";
+
+export type SpaceStatus = "모집중" | "보관" | "완료" | "제안중" | "진행중";
+
+export type SpaceType = "세미나" | "코딩대회" | "프로젝트" | "해커톤";
+
 export type StorageBuckettype = "ANALYTICS" | "STANDARD" | "VECTOR";
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
 export type UserRole = "부원" | "운영진";
+
+export interface Announcements {
+  author_id: string;
+  body: Generated<string>;
+  created_at: Generated<Timestamp>;
+  id: Generated<string>;
+  scope: ContentScope;
+  space_id: string | null;
+  title: string;
+}
 
 export interface AuthAuditLogEntries {
   created_at: Timestamp | null;
@@ -378,6 +396,14 @@ export interface AuthWebauthnCredentials {
   user_id: string;
 }
 
+export interface Comments {
+  author_id: string;
+  body: string;
+  created_at: Generated<Timestamp>;
+  id: Generated<string>;
+  post_id: string;
+}
+
 export interface ExtensionsPgStatStatements {
   calls: Int8 | null;
   dbid: number | null;
@@ -435,6 +461,23 @@ export interface ExtensionsPgStatStatementsInfo {
   stats_reset: Timestamp | null;
 }
 
+export interface Memberships {
+  joined_at: Generated<Timestamp>;
+  role: Generated<SpaceRole>;
+  space_id: string;
+  user_id: string;
+}
+
+export interface Posts {
+  author_id: string;
+  body: Generated<string>;
+  created_at: Generated<Timestamp>;
+  id: Generated<string>;
+  scope: ContentScope;
+  space_id: string | null;
+  title: string;
+}
+
 export interface RealtimeMessages {
   binary_payload: Buffer | null;
   event: string | null;
@@ -466,6 +509,16 @@ export interface RealtimeSubscription {
 
 export interface SchemaMigrations {
   version: string;
+}
+
+export interface Spaces {
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  description: Generated<string>;
+  id: Generated<string>;
+  status: Generated<SpaceStatus>;
+  title: string;
+  type: SpaceType;
 }
 
 export interface StorageBuckets {
@@ -600,6 +653,7 @@ export interface VaultSecrets {
 }
 
 export interface DB {
+  announcements: Announcements;
   "auth.audit_log_entries": AuthAuditLogEntries;
   "auth.custom_oauth_providers": AuthCustomOauthProviders;
   "auth.flow_state": AuthFlowState;
@@ -623,12 +677,16 @@ export interface DB {
   "auth.users": AuthUsers;
   "auth.webauthn_challenges": AuthWebauthnChallenges;
   "auth.webauthn_credentials": AuthWebauthnCredentials;
+  comments: Comments;
   "extensions.pg_stat_statements": ExtensionsPgStatStatements;
   "extensions.pg_stat_statements_info": ExtensionsPgStatStatementsInfo;
+  memberships: Memberships;
+  posts: Posts;
   "realtime.messages": RealtimeMessages;
   "realtime.schema_migrations": RealtimeSchemaMigrations;
   "realtime.subscription": RealtimeSubscription;
   schema_migrations: SchemaMigrations;
+  spaces: Spaces;
   "storage.buckets": StorageBuckets;
   "storage.buckets_analytics": StorageBucketsAnalytics;
   "storage.buckets_vectors": StorageBucketsVectors;
