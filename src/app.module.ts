@@ -9,6 +9,7 @@ import { MembersModule } from './members/members.module';
 import { SpacesModule } from './spaces/spaces.module';
 import { AnnouncementsModule } from './announcements/announcements.module';
 import { BoardModule } from './board/board.module';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { BoardModule } from './board/board.module';
     SpacesModule,
     AnnouncementsModule,
     BoardModule,
+    EventsModule,
   ],
   controllers: [AppController, HealthController],
   providers: [AppService],
