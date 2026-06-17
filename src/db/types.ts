@@ -407,6 +407,13 @@ export interface AuthWebauthnCredentials {
   user_id: string;
 }
 
+export interface ChatChannels {
+  created_at: Generated<Timestamp>;
+  id: Generated<string>;
+  name: Generated<string>;
+  space_id: string;
+}
+
 export interface Comments {
   author_id: string;
   body: string;
@@ -490,6 +497,14 @@ export interface Memberships {
   role: Generated<SpaceRole>;
   space_id: string;
   user_id: string;
+}
+
+export interface Messages {
+  author_id: string;
+  body: string;
+  channel_id: string;
+  created_at: Generated<Timestamp>;
+  id: Generated<string>;
 }
 
 export interface Posts {
@@ -702,11 +717,13 @@ export interface DB {
   "auth.users": AuthUsers;
   "auth.webauthn_challenges": AuthWebauthnChallenges;
   "auth.webauthn_credentials": AuthWebauthnCredentials;
+  chat_channels: ChatChannels;
   comments: Comments;
   events: Events;
   "extensions.pg_stat_statements": ExtensionsPgStatStatements;
   "extensions.pg_stat_statements_info": ExtensionsPgStatStatementsInfo;
   memberships: Memberships;
+  messages: Messages;
   posts: Posts;
   "realtime.messages": RealtimeMessages;
   "realtime.schema_migrations": RealtimeSchemaMigrations;
