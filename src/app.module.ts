@@ -10,6 +10,7 @@ import { SpacesModule } from './spaces/spaces.module';
 import { AnnouncementsModule } from './announcements/announcements.module';
 import { BoardModule } from './board/board.module';
 import { EventsModule } from './events/events.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { EventsModule } from './events/events.module';
     AnnouncementsModule,
     BoardModule,
     EventsModule,
+    ChatModule,
   ],
   controllers: [AppController, HealthController],
   providers: [AppService],
