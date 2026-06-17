@@ -7,6 +7,15 @@ import type { CreatePostDto, CreateCommentDto } from "./dto";
 export class BoardService {
   constructor(@Inject(DB_TOKEN) private readonly db: Database) {}
 
+  private async assertMember(user: JwtPayload, spaceId: string) {
+    if (user.role === "운영진") return;
+    const m = await this.db
+      .selectFrom("memberships").select("user_id")
+      .where("space_id", "=", spaceId).where("user_id", "=", user.sub)
+      .executeTakeFirst();
+    if (!m) throw new ForbiddenException("이 활동공간의 멤버만 가능합니다.");
+  }
+
   list(spaceId?: string) {
     let q = this.db
       .selectFrom("posts as p")
@@ -40,7 +49,8 @@ export class BoardService {
     return { ...post, comments };
   }
 
-  create(user: JwtPayload, dto: CreatePostDto) {
+  async create(user: JwtPayload, dto: CreatePostDto) {
+    if (dto.spaceId) await this.assertMember(user, dto.spaceId);
     const scope = (dto.spaceId ? "space" : "전체") as "space" | "전체";
     return this.db
       .insertInto("posts")
@@ -49,7 +59,11 @@ export class BoardService {
       .executeTakeFirstOrThrow();
   }
 
-  addComment(user: JwtPayload, postId: string, dto: CreateCommentDto) {
+  async addComment(user: JwtPayload, postId: string, dto: CreateCommentDto) {
+    const post = await this.db
+      .selectFrom("posts").select(["space_id"]).where("id", "=", postId).executeTakeFirst();
+    if (!post) throw new NotFoundException("게시글을 찾을 수 없습니다.");
+    if (post.space_id) await this.assertMember(user, post.space_id);
     return this.db
       .insertInto("comments")
       .values({ post_id: postId, author_id: user.sub, body: dto.body })

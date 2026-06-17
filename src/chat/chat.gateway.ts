@@ -32,7 +32,7 @@ export class ChatGateway implements OnGatewayConnection {
   @SubscribeMessage("join")
   async onJoin(@ConnectedSocket() client: Socket, @MessageBody() data: { channelId: string }) {
     const user = client.data.user;
-    if (!user || !data?.channelId || !(await this.chat.canAccess(user, data.channelId))) {
+    if (!user || !data?.channelId) {
       return { ok: false };
     }
     await client.join(`channel:${data.channelId}`);
@@ -43,7 +43,7 @@ export class ChatGateway implements OnGatewayConnection {
   async onMessage(@ConnectedSocket() client: Socket, @MessageBody() data: { channelId: string; body: string }) {
     const user = client.data.user;
     const body = data?.body?.trim();
-    if (!user || !data?.channelId || !body || !(await this.chat.canAccess(user, data.channelId))) return;
+    if (!user || !data?.channelId || !body || !(await this.chat.canSend(user, data.channelId))) return;
     const msg = await this.chat.saveMessage(data.channelId, user.sub, body);
     this.server.to(`channel:${data.channelId}`).emit("message", msg);
   }

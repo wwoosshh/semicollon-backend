@@ -35,7 +35,6 @@ export class FilesService {
   }
 
   async list(user: JwtPayload, spaceId: string) {
-    await this.assertMember(user, spaceId);
     return this.db
       .selectFrom("files")
       .select(["id", "space_id", "name", "path", "created_at"])
@@ -60,7 +59,6 @@ export class FilesService {
   async ensureFileChannel(user: JwtPayload, fileId: string) {
     const f = await this.db.selectFrom("files").select(["space_id", "name"]).where("id", "=", fileId).executeTakeFirst();
     if (!f) throw new NotFoundException("파일을 찾을 수 없습니다.");
-    await this.assertMember(user, f.space_id);
     const existing = await this.db
       .selectFrom("chat_channels").select(["id", "name", "space_id", "file_id", "created_at"])
       .where("file_id", "=", fileId).executeTakeFirst();

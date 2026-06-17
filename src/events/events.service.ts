@@ -38,6 +38,15 @@ export class EventsService {
     if (m?.role !== "리더") throw new ForbiddenException("공간 일정은 리더 또는 운영진만 관리할 수 있습니다.");
   }
 
+  private async assertMember(user: JwtPayload, spaceId: string) {
+    if (user.role === "운영진") return;
+    const m = await this.db
+      .selectFrom("memberships").select("user_id")
+      .where("space_id", "=", spaceId).where("user_id", "=", user.sub)
+      .executeTakeFirst();
+    if (!m) throw new ForbiddenException("이 활동공간의 멤버만 가능합니다.");
+  }
+
   async create(user: JwtPayload, dto: CreateEventDto) {
     await this.assertCanManage(user, dto.spaceId);
     const scope = (dto.spaceId ? "space" : "전체") as "space" | "전체";
@@ -97,6 +106,9 @@ export class EventsService {
   }
 
   async setMyAttendance(user: JwtPayload, eventId: string, dto: SetAttendanceDto) {
+    const ev = await this.db.selectFrom("events").select(["space_id"]).where("id", "=", eventId).executeTakeFirst();
+    if (!ev) throw new NotFoundException("일정을 찾을 수 없습니다.");
+    if (ev.space_id) await this.assertMember(user, ev.space_id);
     await this.db
       .insertInto("attendance")
       .values({ event_id: eventId, user_id: user.sub, status: dto.status })
