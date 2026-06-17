@@ -553,6 +553,11 @@ export interface SchemaMigrations {
   version: string;
 }
 
+export interface Settings {
+  key: string;
+  value: string;
+}
+
 export interface Spaces {
   created_at: Generated<Timestamp>;
   created_by: string;
@@ -732,6 +737,7 @@ export interface DB {
   "realtime.schema_migrations": RealtimeSchemaMigrations;
   "realtime.subscription": RealtimeSubscription;
   schema_migrations: SchemaMigrations;
+  settings: Settings;
   spaces: Spaces;
   "storage.buckets": StorageBuckets;
   "storage.buckets_analytics": StorageBucketsAnalytics;
