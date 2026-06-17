@@ -1,4 +1,4 @@
-import { ConflictException, Inject, Injectable, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, ConflictException, Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import { DB_TOKEN, type Database } from "../db/database";
 import { PasswordService } from "./password.service";
 import { TokenService } from "./token.service";
@@ -21,14 +21,22 @@ export class AuthService {
   }
 
   async signup(dto: SignupDto) {
+    const setting = await this.db
+      .selectFrom("settings").select("value").where("key", "=", "invite_code").executeTakeFirst();
+    const expected = (setting?.value ?? "").trim();
+    if (!dto.inviteCode || dto.inviteCode.trim() !== expected) {
+      throw new BadRequestException("초대코드가 올바르지 않습니다.");
+    }
+
     const existing = await this.db
       .selectFrom("users").select("id").where("email", "=", dto.email).executeTakeFirst();
     if (existing) throw new ConflictException("이미 가입된 이메일입니다.");
 
+    const cohort = Number.isFinite(Number(dto.cohort)) ? Number(dto.cohort) : null;
     const password_hash = await this.passwords.hash(dto.password);
     const user = await this.db
       .insertInto("users")
-      .values({ email: dto.email, password_hash, name: dto.name })
+      .values({ email: dto.email, password_hash, name: dto.name, cohort })
       .returning(["id", "role"])
       .executeTakeFirstOrThrow();
     return this.issue(user);

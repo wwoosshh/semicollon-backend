@@ -2,6 +2,8 @@ export interface SignupDto {
   email: string;
   password: string;
   name: string;
+  cohort: number;
+  inviteCode: string;
 }
 export interface LoginDto {
   email: string;

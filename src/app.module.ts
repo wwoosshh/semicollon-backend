@@ -12,6 +12,7 @@ import { BoardModule } from './board/board.module';
 import { EventsModule } from './events/events.module';
 import { ChatModule } from './chat/chat.module';
 import { VoiceModule } from './voice/voice.module';
+import { SettingsModule } from './settings/settings.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { VoiceModule } from './voice/voice.module';
     EventsModule,
     ChatModule,
     VoiceModule,
+    SettingsModule,
   ],
   controllers: [AppController, HealthController],
   providers: [AppService],
